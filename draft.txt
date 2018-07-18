@@ -1,0 +1,34 @@
+        # optimal_action_history = [[0, 0, 1, 0, 0, 0, 0]]  # 最优化action历史,这里的数据应该从专家系统来
+        # egomotion_history = [[0., 0., 0.]]  # 自运动历史,[translation, rotation]
+        # rewards_history = [0.]  # 回报历史
+        # goal_map_history = [np.zeros((256, 256, 1))]  # 目标图像, 专家系统给
+        # space_map_history = [np.zeros((1, 1, 256, 256, 1))]  # space map, 专家系统给
+        # # print(goal_map_history[-1].shape)
+        # estimate_maps_history = [[np.zeros((1, 256, 256, 3))] * net._estimate_scale]  # free space estimate maps
+
+        # estimate_maps_images = []
+        # goal_maps_images = []
+        # fused_maps_images = []
+        # value_maps_images = []
+
+        # prepare dict for cmp
+        feed_dict = prepare_feed_dict(net.input_tensors, {'sequence_length': np.array([1]),
+                                                        'visual_input': imgd,
+                                                        'egomotion': np.array([[egomotion_history[-1]]]),
+                                                        'reward': np.array([[rewards_history[-1]]]),
+                                                        'goal_map': np.array([[goal_map_history[-1]]]),
+                                                        'estimate_map_list': estimate_maps_history[-1],
+                                                        "space_map": space_map_history[-1],
+                                                        'is_training': False})
+
+        _estimate_maps = sess.run(net.intermediate_tensors["estimate_map_list"], feed_dict=feed_dict)
+                _value_maps = sess.run(net.intermediate_tensors["value_map_list"], feed_dict=feed_dict)
+                _goal_maps = sess.run(net.intermediate_tensors["goal_map_list"], feed_dict=feed_dict)
+                value_maps = [tf.nn.sigmoid(value[0, -1, :, :, :4]) for value in _value_maps]
+                estimate_maps = [tf.nn.sigmoid(estimate[0, -1, :, :, :4]) for estimate in _estimate_maps]
+                goal_maps = [tf.nn.sigmoid(goal[0, -1, :, :, :4]) for goal in _goal_maps]
+
+                print("Action", results[0])
+                print("Estimate maps", len(estimate_maps), estimate_maps[0].shape)
+                print("Value maps", len(value_maps), value_maps[0].shape)
+                print("Goal maps", len(goal_maps), goal_maps[0].shape)
