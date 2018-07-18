@@ -1,0 +1,3 @@
+[submodule "deepmind_lab"]
+	path = deepmind_lab
+	url = https://github.com/dongniu0927/lab.git
